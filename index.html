@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Printing Business</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #444;
+        }
+        .section input, .section select, .section button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .section button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .section button:hover {
+            background-color: #218838;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>3D Printing Business Manager</h1>
+    
+    <div class="container">
+        <!-- Add Customer Section -->
+        <div class="section">
+            <h2>Add Customer</h2>
+            <input type="text" id="customerName" placeholder="Customer Name">
+            <input type="text" id="customerContact" placeholder="Customer Contact Info">
+            <button onclick="addCustomer()">Add Customer</button>
+        </div>
+
+        <!-- Place Order Section -->
+        <div class="section">
+            <h2>Place Order</h2>
+            <select id="orderCustomer">
+                <option value="">Select Customer</option>
+            </select>
+            <select id="orderMaterial">
+                <option value="PLA">PLA</option>
+                <option value="ABS">ABS</option>
+                <option value="PETG">PETG</option>
+            </select>
+            <input type="number" id="orderQuantity" placeholder="Quantity (grams)">
+            <input type="number" id="orderPrintTime" placeholder="Print Time (hours)">
+            <button onclick="placeOrder()">Place Order</button>
+        </div>
+
+        <!-- View Customers Section -->
+        <div class="section">
+            <h2>View Customers</h2>
+            <table id="customersTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Contact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Customer rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- View Orders Section -->
+        <div class="section">
+            <h2>View Orders</h2>
+            <table id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer ID</th>
+                        <th>Material</th>
+                        <th>Quantity (g)</th>
+                        <th>Print Time (hrs)</th>
+                        <th>Cost ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Order rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- View Inventory Section -->
+        <div class="section">
+            <h2>View Inventory</h2>
+            <table id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Quantity Remaining (g)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Inventory rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let customers = [];
+        let orders = [];
+        let inventory = {
+            'PLA': 1000,
+            'ABS': 1000,
+            'PETG': 1000
+        };
+        let materialPricing = {
+            'PLA': 0.05,
+            'ABS': 0.06,
+            'PETG': 0.07
+        };
+
+        function addCustomer() {
+            const name = document.getElementById('customerName').value;
+            const contact = document.getElementById('customerContact').value;
+            
+            if (name === '' || contact === '') {
+                alert('Please fill out all customer details.');
+                return;
+            }
+            
+            const customerId = customers.length + 1;
+            customers.push({ id: customerId, name, contact });
+            
+            updateCustomerSelect();
+            updateCustomersTable();
+            
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerContact').value = '';
+            alert('Customer added successfully!');
+        }
+
+        function updateCustomerSelect() {
+            const select = document.getElementById('orderCustomer');
+            select.innerHTML = '<option value="">Select Customer</option>';
+            customers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = `${customer.id}: ${customer.name}`;
+                select.appendChild(option);
+            });
+        }
+
+        function placeOrder() {
+            const customerId = parseInt(document.getElementById('orderCustomer').value);
+            const material = document.getElementById('orderMaterial').value;
+            const quantity = parseInt(document.getElementById('orderQuantity').value);
+            const printTime = parseFloat(document.getElementById('orderPrintTime').value);
+
+            if (!customerId || !material || !quantity || !printTime) {
+                alert('Please fill out all order details.');
+                return;
+            }
+
+            if (inventory[material] < quantity) {
+                alert('Insufficient stock for this material.');
+                return;
+            }
+
+            const cost = (materialPricing[material] * quantity) + (10 * printTime);
+            const orderId = orders.length + 1;
+            orders.push({ orderId, customerId, material, quantity, printTime, cost });
+            inventory[material] -= quantity;
+
+            updateOrdersTable();
+            updateInventoryTable();
+
+            document.getElementById('orderCustomer').value = '';
+            document.getElementById('orderMaterial').value = 'PLA';
+            document.getElementById('orderQuantity').value = '';
+            document.getElementById('orderPrintTime').value = '';
+            alert(`Order placed successfully! Total cost: $${cost.toFixed(2)}`);
+        }
+
+        function updateCustomersTable() {
+            const tbody = document.getElementById('customersTable').querySelector('tbody');
+            tbody.innerHTML = '';
+            customers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${customer.id}</td><td>${customer.name}</td><td>${customer.contact}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateOrdersTable() {
+            const tbody = document.getElementById('ordersTable').querySelector('tbody');
+            tbody.innerHTML = '';
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${order.orderId}</td><td>${order.customerId}</td><td>${order.material}</td><td>${order.quantity}</td><td>${order.printTime}</td><td>$${order.cost.toFixed(2)}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateInventoryTable() {
+            const tbody = document.getElementById('inventoryTable').querySelector('tbody');
+            tbody.innerHTML = '';
+            for (const material in inventory) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${material}</td><td>${inventory[material]} grams</td>`;
+                tbody.appendChild(row);
+            }
+        }
+
+        // Initial table updates
+        updateInventoryTable();
+    </script>
+
+</body>
+</html>
