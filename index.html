@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printing Business</title>
+    <title>3D Printing Business Manager</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f2e7fe;
+            color: #3e2a72;
             margin: 0;
             padding: 20px;
         }
         h1 {
             text-align: center;
-            color: #333;
+            color: #4b2b82;
         }
         .container {
             max-width: 800px;
@@ -28,7 +29,7 @@
         }
         .section h2 {
             margin-top: 0;
-            color: #444;
+            color: #4b2b82;
         }
         .section input, .section select, .section button {
             width: 100%;
@@ -36,15 +37,16 @@
             margin: 5px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
+            box-sizing: border-box;
         }
         .section button {
-            background-color: #28a745;
+            background-color: #6a1b9a;
             color: #fff;
             border: none;
             cursor: pointer;
         }
         .section button:hover {
-            background-color: #218838;
+            background-color: #4b2b82;
         }
         table {
             width: 100%;
@@ -59,7 +61,7 @@
             text-align: left;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #e1bee7;
         }
     </style>
 </head>
@@ -90,6 +92,18 @@
             <input type="number" id="orderQuantity" placeholder="Quantity (grams)">
             <input type="number" id="orderPrintTime" placeholder="Print Time (hours)">
             <button onclick="placeOrder()">Place Order</button>
+        </div>
+
+        <!-- Add Inventory Section -->
+        <div class="section">
+            <h2>Add Inventory</h2>
+            <select id="inventoryMaterial">
+                <option value="PLA">PLA</option>
+                <option value="ABS">ABS</option>
+                <option value="PETG">PETG</option>
+            </select>
+            <input type="number" id="inventoryQuantity" placeholder="Quantity to Add (grams)">
+            <button onclick="addInventory()">Add Inventory</button>
         </div>
 
         <!-- View Customers Section -->
@@ -222,6 +236,24 @@
             alert(`Order placed successfully! Total cost: $${cost.toFixed(2)}`);
         }
 
+        function addInventory() {
+            const material = document.getElementById('inventoryMaterial').value;
+            const quantity = parseInt(document.getElementById('inventoryQuantity').value);
+
+            if (!material || !quantity) {
+                alert('Please fill out all inventory details.');
+                return;
+            }
+
+            inventory[material] += quantity;
+
+            updateInventoryTable();
+
+            document.getElementById('inventoryMaterial').value = 'PLA';
+            document.getElementById('inventoryQuantity').value = '';
+            alert('Inventory added successfully!');
+        }
+
         function updateCustomersTable() {
             const tbody = document.getElementById('customersTable').querySelector('tbody');
             tbody.innerHTML = '';
@@ -247,17 +279,16 @@
             tbody.innerHTML = '';
             for (const material in inventory) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td>${material}</td><td>${inventory[material]} grams</td>`;
+                row.innerHTML = `<td>${material}</td><td>${inventory[material]}</td>`;
                 tbody.appendChild(row);
             }
         }
 
         // Initial table updates
+        updateCustomersTable();
+        updateOrdersTable();
         updateInventoryTable();
     </script>
-
 </body>
 </html>
 
-</body>
-</html>
